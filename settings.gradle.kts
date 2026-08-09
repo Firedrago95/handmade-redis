@@ -1,1 +1,1 @@
-rootProject.name = "handmade-cache"
+rootProject.name = "handmade-redis"

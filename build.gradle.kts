@@ -2,7 +2,7 @@ plugins {
     kotlin("jvm") version "2.0.0"
 }
 
-group = "cache.lite"
+group = "handmade.redis"
 version = "1.0-SNAPSHOT"
 
 repositories {
