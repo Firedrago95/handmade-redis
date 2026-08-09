@@ -60,8 +60,4 @@
 - [ ] Stage 7-1. REPLICAOF 기본 핸드셰이크
 - [ ] Stage 7-2. Master → Replica 커맨드 전파
 
----
-
 **진행률**: 0 / 22
-
-*자세한 세부 구현 룰과 에이전트 사용 규칙은 `docs/IMPLEMENTATION_PLAN.md`를 참고하세요.*
