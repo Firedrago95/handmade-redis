@@ -18,6 +18,16 @@ class RedisServer {
         val clientPort = socket.port
         log.info { "새로운 클라이언트 연결 수락됨: [$clientIp:$clientPort]" }
 
+        // 소켓을 통해 입력 읽기
+        val inputStream = socket.inputStream
+        val outputStream = socket.outputStream
 
+        val buffer = ByteArray(1024)
+        val byteRead = inputStream.read(buffer)
+        val response = String(buffer, 0, byteRead)
+
+        // 응답하기
+        outputStream.write("+PONG\r\n".toByteArray())
+        outputStream.flush()
     }
 }

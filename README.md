@@ -23,7 +23,7 @@
 
 ### Phase 1: TCP 서버 기초
 - [x] Stage 1-1. 6379 포트 TCP 서버 바인딩
-- [ ] Stage 1-2. 단일 클라이언트 연결 수락 및 응답
+- [x] Stage 1-2. 단일 클라이언트 연결 수락 및 응답
 - [ ] Stage 1-3. 동일 연결에서 다중 명령 순차 처리
 - [ ] Stage 1-4. 다중 클라이언트 동시 처리 (Thread-per-connection / Virtual Thread)
 
@@ -60,4 +60,4 @@
 - [ ] Stage 7-1. REPLICAOF 기본 핸드셰이크
 - [ ] Stage 7-2. Master → Replica 커맨드 전파
 
-**진행률**: 1 / 22
+**진행률**: 2 / 22

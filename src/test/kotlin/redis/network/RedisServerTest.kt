@@ -36,4 +36,28 @@ class RedisServerTest {
             fail("6379 포트로의 연결이 실패했습니다. 서버가 먼저 실행되어 있는지 확인하세요. 에러: ${e.message}")
         }
     }
+
+    @Test
+    fun `클라이언트가 데이터를 보내면 서버는 +PONG 을 응답해야 한다`() {
+        try {
+            Socket("127.0.0.1", 6379).use { socket ->
+                val output = socket.getOutputStream()
+                val input = socket.getInputStream()
+
+                // PING 명령어 전송 (개행 문자 포함)
+                output.write("PING\r\n".toByteArray())
+                output.flush()
+
+                // 응답 읽기
+                val buffer = ByteArray(1024)
+                val bytesRead = input.read(buffer)
+                assertTrue(bytesRead > 0, "서버로부터 응답이 없습니다.")
+
+                val response = String(buffer, 0, bytesRead)
+                assertEquals("+PONG\r\n", response, "서버의 응답이 +PONG 형식이 아닙니다.")
+            }
+        } catch (e: Exception) {
+            fail("테스트 실패: ${e.message}")
+        }
+    }
 }
