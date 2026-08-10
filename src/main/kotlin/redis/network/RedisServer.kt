@@ -2,6 +2,8 @@ package redis.network
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.net.ServerSocket
+import java.net.Socket
+import java.util.concurrent.Executors
 
 class RedisServer {
 
@@ -12,8 +14,17 @@ class RedisServer {
         val serverSocket = ServerSocket(port)
         log.info { "서버가 $port 포트에서 시작되었습니다. 연결을 대기합니다..." }
 
-        // 소켓연결이 될때까지 스레드 블로킹, 연결시 소켓 객체 생성
-        val socket = serverSocket.accept()
+        // 다중 클라이언트 연결을 위해 반복문을 통해 소켓 연결확인 및 작업 할당
+        while (true) {
+            // 소켓연결이 될때까지 스레드 블로킹, 연결시 소켓 객체 생성
+            // 가상스레드를 통해 동기식 코드 흐름 유지하면서도, 효율적인 연결 가능
+            val socket = serverSocket.accept()
+            val executor = Executors.newVirtualThreadPerTaskExecutor()
+            executor.submit { handleClient(socket) }
+        }
+    }
+
+    private fun handleClient(socket: Socket) {
         val clientIp = socket.inetAddress.hostAddress
         val clientPort = socket.port
         log.info { "새로운 클라이언트 연결 수락됨: [$clientIp:$clientPort]" }
