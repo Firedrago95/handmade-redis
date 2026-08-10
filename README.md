@@ -24,7 +24,7 @@
 ### Phase 1: TCP 서버 기초
 - [x] Stage 1-1. 6379 포트 TCP 서버 바인딩
 - [x] Stage 1-2. 단일 클라이언트 연결 수락 및 응답
-- [ ] Stage 1-3. 동일 연결에서 다중 명령 순차 처리
+- [x] Stage 1-3. 동일 연결에서 다중 명령 순차 처리
 - [ ] Stage 1-4. 다중 클라이언트 동시 처리 (Thread-per-connection / Virtual Thread)
 
 ### Phase 2: RESP 프로토콜
