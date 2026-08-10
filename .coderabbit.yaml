@@ -1,0 +1,16 @@
+# CodeRabbit 설정 파일 (.coderabbit.yaml)
+
+# 리뷰 및 응답 언어 설정 (한국어)
+language: "ko-KR"
+
+reviews:
+  # PR 생성/업데이트 시 자동 리뷰 비활성화 (@coderabbitai review 태그 시에만 리뷰)
+  auto_review:
+    enabled: false
+
+  # PR 본문 요약(Summary) 자동 생성 비활성화
+  high_level_summary: false
+
+  # 불필요한 시(Poem) 및 시퀀스 다이어그램 생성 비활성화
+  poem: false
+  sequence_diagrams: false
