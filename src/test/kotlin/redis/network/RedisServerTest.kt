@@ -16,7 +16,7 @@ class RedisServerTest {
             thread(isDaemon = true) {
                 try {
                     val server = RedisServer()
-                    server.start()
+                    server.start(6379)
                 } catch (e: Exception) {
                     // 이미 포트가 사용 중이거나 에러가 발생한 경우 무시 (다른 테스트에서 띄웠을 수 있음)
                 }
@@ -41,6 +41,7 @@ class RedisServerTest {
     fun `클라이언트가 데이터를 보내면 서버는 +PONG 을 응답해야 한다`() {
         try {
             Socket("127.0.0.1", 6379).use { socket ->
+                socket.soTimeout = 2000
                 val output = socket.getOutputStream()
                 val input = socket.getInputStream()
 

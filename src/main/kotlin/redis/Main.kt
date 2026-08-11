@@ -5,5 +5,5 @@ import redis.network.RedisServer
 fun main() {
     val server = RedisServer()
 
-    server.start()
+    server.start(6379)
 }
