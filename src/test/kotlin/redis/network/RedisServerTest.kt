@@ -18,7 +18,7 @@ class RedisServerTest {
                     val server = RedisServer()
                     server.start(6379)
                 } catch (e: Exception) {
-                    // 이미 포트가 사용 중이거나 에러가 발생한 경우 무시 (다른 테스트에서 띄웠을 수 있음)
+                    // 이미 포트가 사용 중이거나 에러가 발생한 경우 무시
                 }
             }
             // 서버가 포트를 바인딩할 때까지 아주 잠시 대기
@@ -66,9 +66,7 @@ class RedisServerTest {
     fun `단일 클라이언트가 연결을 유지한 채 여러 번 명령을 보내도 모두 정상적으로 응답해야 한다`() {
         try {
             Socket("127.0.0.1", 6379).use { socket ->
-                // 서버가 응답을 주지 않고 대기(Hang)하는 것을 방지하기 위해 타임아웃 2초 설정
                 socket.soTimeout = 2000
-                
                 val output = socket.getOutputStream()
                 val input = socket.getInputStream()
                 val buffer = ByteArray(1024)

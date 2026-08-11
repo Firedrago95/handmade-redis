@@ -10,14 +10,11 @@ class RedisServer {
     private val log = KotlinLogging.logger {}
     private val executor = Executors.newVirtualThreadPerTaskExecutor()
 
-    fun start(port: Int) {
+    fun start(port: Int = 6379) {
         val serverSocket = ServerSocket(port)
         log.info { "서버가 $port 포트에서 시작되었습니다. 연결을 대기합니다..." }
 
-        // 다중 클라이언트 연결을 위해 반복문을 통해 소켓 연결확인 및 작업 할당
         while (true) {
-            // 소켓연결이 될때까지 스레드 블로킹, 연결시 소켓 객체 생성
-            // 가상스레드를 통해 동기식 코드 흐름 유지하면서도, 효율적인 연결 가능
             val socket = serverSocket.accept()
             executor.submit { handleClient(socket) }
         }
