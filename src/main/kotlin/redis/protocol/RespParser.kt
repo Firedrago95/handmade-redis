@@ -4,14 +4,15 @@ import java.lang.IllegalArgumentException
 
 class RespParser {
 
-    companion object {
-        val parsers: Map<String, RespValueParser> = mapOf(
+    private val parsers: Map<String, RespValueParser> by lazy {
+        mapOf(
             "+" to SimpleStringParser(),
-            "$" to BulkStringParser()
+            "$" to BulkStringParser(),
+            "*" to ArrayParser(this)
         )
     }
 
-    fun parse(input: String): RespValue {
+    fun parse(input: String): ParseResult {
         val firstCommand = input.substring(0, 1)
 
         val parser = parsers[firstCommand]

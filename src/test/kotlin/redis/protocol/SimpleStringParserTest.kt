@@ -11,31 +11,34 @@ class SimpleStringParserTest {
     @Test
     fun `+OK CRLF 입력 시 SimpleString(OK)로 파싱되어야 한다`() {
         val input = "+OK\r\n"
-        val parsed = parser.parse(input)
+        val result = parser.parse(input)
 
-        assertInstanceOf(RespValue.SimpleString::class.java, parsed)
-        val simpleString = parsed as RespValue.SimpleString
+        assertInstanceOf(RespValue.SimpleString::class.java, result.value)
+        val simpleString = result.value as RespValue.SimpleString
         assertEquals("OK", simpleString.content)
+        assertEquals(5, result.consumedBytes)
     }
 
     @Test
     fun `+PONG CRLF 입력 시 SimpleString(PONG)으로 파싱되어야 한다`() {
         val input = "+PONG\r\n"
-        val parsed = parser.parse(input)
+        val result = parser.parse(input)
 
-        assertInstanceOf(RespValue.SimpleString::class.java, parsed)
-        val simpleString = parsed as RespValue.SimpleString
+        assertInstanceOf(RespValue.SimpleString::class.java, result.value)
+        val simpleString = result.value as RespValue.SimpleString
         assertEquals("PONG", simpleString.content)
+        assertEquals(7, result.consumedBytes)
     }
 
     @Test
     fun `+ CRLF 입력 시 빈 문자열을 담은 SimpleString으로 파싱되어야 한다`() {
         val input = "+\r\n"
-        val parsed = parser.parse(input)
+        val result = parser.parse(input)
 
-        assertInstanceOf(RespValue.SimpleString::class.java, parsed)
-        val simpleString = parsed as RespValue.SimpleString
+        assertInstanceOf(RespValue.SimpleString::class.java, result.value)
+        val simpleString = result.value as RespValue.SimpleString
         assertEquals("", simpleString.content)
+        assertEquals(3, result.consumedBytes)
     }
 
     @Test

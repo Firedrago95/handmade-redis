@@ -11,19 +11,21 @@ class RespParserTest {
     @Test
     fun `+ 식별자 입력 시 SimpleStringParser로 라우팅되어 결과를 반환해야 한다`() {
         val input = "+OK\r\n"
-        val parsed = parser.parse(input)
+        val result = parser.parse(input)
 
-        assertInstanceOf(RespValue.SimpleString::class.java, parsed)
-        assertEquals("OK", (parsed as RespValue.SimpleString).content)
+        assertInstanceOf(RespValue.SimpleString::class.java, result.value)
+        assertEquals("OK", (result.value as RespValue.SimpleString).content)
+        assertEquals(input.length, result.consumedBytes)
     }
 
     @Test
     fun `$ 식별자 입력 시 BulkStringParser로 라우팅되어 결과를 반환해야 한다`() {
         val input = "\$3\r\nfoo\r\n"
-        val parsed = parser.parse(input)
+        val result = parser.parse(input)
 
-        assertInstanceOf(RespValue.BulkString::class.java, parsed)
-        assertEquals("foo", (parsed as RespValue.BulkString).content)
+        assertInstanceOf(RespValue.BulkString::class.java, result.value)
+        assertEquals("foo", (result.value as RespValue.BulkString).content)
+        assertEquals(input.length, result.consumedBytes)
     }
 
     @Test
