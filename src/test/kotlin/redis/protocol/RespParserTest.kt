@@ -6,33 +6,167 @@ import org.junit.jupiter.api.assertThrows
 
 class RespParserTest {
 
-    private val parser = RespParser()
+    private fun createParser(input: String): RespParser {
+        return RespParser(input.byteInputStream(Charsets.UTF_8))
+    }
+
+    // --- SimpleString 테스트 ---
 
     @Test
-    fun `+ 식별자 입력 시 SimpleStringParser로 라우팅되어 결과를 반환해야 한다`() {
+    fun `+OK CRLF 입력 시 SimpleString(OK)로 파싱되어야 한다`() {
         val input = "+OK\r\n"
-        val result = parser.parse(input)
+        val parser = createParser(input)
+        val parsed = parser.parse()
 
-        assertInstanceOf(RespValue.SimpleString::class.java, result.value)
-        assertEquals("OK", (result.value as RespValue.SimpleString).content)
-        assertEquals(input.length, result.consumedBytes)
+        assertInstanceOf(RespValue.SimpleString::class.java, parsed)
+        assertEquals("OK", (parsed as RespValue.SimpleString).content)
     }
 
     @Test
-    fun `$ 식별자 입력 시 BulkStringParser로 라우팅되어 결과를 반환해야 한다`() {
+    fun `+PONG CRLF 입력 시 SimpleString(PONG)으로 파싱되어야 한다`() {
+        val input = "+PONG\r\n"
+        val parser = createParser(input)
+        val parsed = parser.parse()
+
+        assertInstanceOf(RespValue.SimpleString::class.java, parsed)
+        assertEquals("PONG", (parsed as RespValue.SimpleString).content)
+    }
+
+    @Test
+    fun `+ CRLF 입력 시 빈 문자열을 담은 SimpleString으로 파싱되어야 한다`() {
+        val input = "+\r\n"
+        val parser = createParser(input)
+        val parsed = parser.parse()
+
+        assertInstanceOf(RespValue.SimpleString::class.java, parsed)
+        assertEquals("", (parsed as RespValue.SimpleString).content)
+    }
+
+    // --- BulkString 테스트 ---
+
+    @Test
+    fun `$3 CRLF foo CRLF 입력 시 BulkString(foo)로 파싱되어야 한다`() {
         val input = "\$3\r\nfoo\r\n"
-        val result = parser.parse(input)
+        val parser = createParser(input)
+        val parsed = parser.parse()
 
-        assertInstanceOf(RespValue.BulkString::class.java, result.value)
-        assertEquals("foo", (result.value as RespValue.BulkString).content)
-        assertEquals(input.length, result.consumedBytes)
+        assertInstanceOf(RespValue.BulkString::class.java, parsed)
+        assertEquals("foo", (parsed as RespValue.BulkString).content)
     }
 
     @Test
-    fun `지원하지 않는 식별자가 입력된 경우 IllegalArgumentException이 발생해야 한다`() {
-        val input = "?INVALID\r\n"
+    fun `$0 CRLF CRLF 입력 시 빈 문자열 BulkString으로 파싱되어야 한다`() {
+        val input = "\$0\r\n\r\n"
+        val parser = createParser(input)
+        val parsed = parser.parse()
+
+        assertInstanceOf(RespValue.BulkString::class.java, parsed)
+        assertEquals("", (parsed as RespValue.BulkString).content)
+    }
+
+    @Test
+    fun `$-1 CRLF 입력 시 Null을 담은 BulkString으로 파싱되어야 한다`() {
+        val input = "\$-1\r\n"
+        val parser = createParser(input)
+        val parsed = parser.parse()
+
+        assertInstanceOf(RespValue.BulkString::class.java, parsed)
+        assertNull((parsed as RespValue.BulkString).content)
+    }
+
+    @Test
+    fun `$-2 이하의 음수 길이가 입력된 경우 예외가 발생해야 한다`() {
+        val input = "\$-2\r\n"
+        val parser = createParser(input)
         assertThrows<IllegalArgumentException> {
-            parser.parse(input)
+            parser.parse()
+        }
+    }
+
+    // --- Array 테스트 ---
+
+    @Test
+    fun `동일한 타입의 요소가 담긴 Array가 올바르게 파싱되어야 한다`() {
+        val input = "*2\r\n\$3\r\nfoo\r\n\$3\r\nbar\r\n"
+        val parser = createParser(input)
+        val parsed = parser.parse()
+
+        assertInstanceOf(RespValue.Array::class.java, parsed)
+        val array = parsed as RespValue.Array
+        assertNotNull(array.elements)
+        assertEquals(2, array.elements!!.size)
+        assertEquals(RespValue.BulkString("foo"), array.elements[0])
+        assertEquals(RespValue.BulkString("bar"), array.elements[1])
+    }
+
+    @Test
+    fun `서로 다른 타입의 요소가 담긴 Array가 올바르게 파싱되어야 한다`() {
+        val input = "*2\r\n+OK\r\n\$3\r\nfoo\r\n"
+        val parser = createParser(input)
+        val parsed = parser.parse()
+
+        assertInstanceOf(RespValue.Array::class.java, parsed)
+        val array = parsed as RespValue.Array
+        assertNotNull(array.elements)
+        assertEquals(2, array.elements!!.size)
+        assertEquals(RespValue.SimpleString("OK"), array.elements[0])
+        assertEquals(RespValue.BulkString("foo"), array.elements[1])
+    }
+
+    @Test
+    fun `*0 CRLF 입력 시 빈 리스트를 담은 Array로 파싱되어야 한다`() {
+        val input = "*0\r\n"
+        val parser = createParser(input)
+        val parsed = parser.parse()
+
+        assertInstanceOf(RespValue.Array::class.java, parsed)
+        val array = parsed as RespValue.Array
+        assertNotNull(array.elements)
+        assertTrue(array.elements!!.isEmpty())
+    }
+
+    @Test
+    fun `*-1 CRLF 입력 시 Null을 담은 Array로 파싱되어야 한다`() {
+        val input = "*-1\r\n"
+        val parser = createParser(input)
+        val parsed = parser.parse()
+
+        assertInstanceOf(RespValue.Array::class.java, parsed)
+        val array = parsed as RespValue.Array
+        assertNull(array.elements)
+    }
+
+    @Test
+    fun `중첩된 Array 형태도 올바르게 재귀적으로 파싱되어야 한다`() {
+        val input = "*1\r\n*1\r\n+OK\r\n"
+        val parser = createParser(input)
+        val parsed = parser.parse()
+
+        assertInstanceOf(RespValue.Array::class.java, parsed)
+        val outerArray = parsed as RespValue.Array
+        assertNotNull(outerArray.elements)
+        assertEquals(1, outerArray.elements!!.size)
+
+        val innerArray = outerArray.elements[0] as RespValue.Array
+        assertNotNull(innerArray.elements)
+        assertEquals(RespValue.SimpleString("OK"), innerArray.elements!![0])
+    }
+
+    @Test
+    fun `*-2 이하의 음수 개수가 입력된 경우 예외가 발생해야 한다`() {
+        val input = "*-2\r\n"
+        val parser = createParser(input)
+        assertThrows<IllegalArgumentException> {
+            parser.parse()
+        }
+    }
+
+    @Test
+    fun `지원하지 않는 식별자가 입력된 경우 예외가 발생해야 한다`() {
+        val input = "?INVALID\r\n"
+        val parser = createParser(input)
+        assertThrows<IllegalArgumentException> {
+            parser.parse()
         }
     }
 }

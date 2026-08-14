@@ -1,5 +1,7 @@
 package redis.protocol
 
+import java.io.InputStream
+
 interface RespValueParser {
-    fun parse(input: String): ParseResult
+    fun parse(inputStream: InputStream): RespValue
 }
