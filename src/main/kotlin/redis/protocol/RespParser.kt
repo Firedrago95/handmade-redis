@@ -1,14 +1,13 @@
 package redis.protocol
 
+import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.lang.IllegalArgumentException
 
-class RespParser (inputStream: InputStream) {
-
-    private val reader = inputStream.bufferedReader(Charsets.UTF_8)
+class RespParser (private val inputStream: InputStream) {
 
     fun parse(): RespValue {
-        val prefix = reader.read().toChar()
+        val prefix = inputStream.read().toChar()
 
         return when (prefix) {
             '+' -> parseSimpleString()
@@ -19,24 +18,23 @@ class RespParser (inputStream: InputStream) {
     }
 
     private fun parseSimpleString(): RespValue {
-        val message = reader.readLine()
+        val message = readLine()
         return RespValue.SimpleString(message)
     }
 
     private fun parseBulkString(): RespValue {
-        val length = reader.readLine().toInt()
+        val length = readLine().toInt()
         if (length == -1) return RespValue.BulkString(null)
         if (length < -1) throw IllegalArgumentException("BulkString은 -1 이외의 음수 길이를 가질 수 없습니다.")
 
-        val buffer = CharArray(length)
-        reader.read(buffer, 0, length)
-        reader.readLine()
+        val readNBytes = inputStream.readNBytes(length)
+        inputStream.readNBytes(2)
 
-        return RespValue.BulkString(String(buffer))
+        return RespValue.BulkString(String(readNBytes))
     }
 
     private fun readArray(): RespValue {
-        val count = reader.readLine().toInt()
+        val count = readLine().toInt()
         if (count == -1) return RespValue.Array(null)
         if (count < -1) throw IllegalArgumentException("Array는 -1 이외의 음수 길이를 가질 수 없습니다.")
 
@@ -45,5 +43,20 @@ class RespParser (inputStream: InputStream) {
             list.add(parse())
         }
         return RespValue.Array(list)
+    }
+
+    private fun readLine() : String {
+        val ba = ByteArrayOutputStream()
+        var b: Int
+
+        while (inputStream.read().also { b = it } != -1) {
+            if (b == '\r'.code) {
+                inputStream.read()
+                break
+            }
+            ba.write(b)
+        }
+
+        return ba.toString(Charsets.UTF_8)
     }
 }
