@@ -29,7 +29,7 @@
 
 ### Phase 2: RESP 프로토콜
 - [x] Stage 2-1. RESP 파서: Simple String (`+OK\r\n`)
-- [ ] Stage 2-2. RESP 파서: Bulk String (`$3\r\nfoo\r\n`)
+- [x] Stage 2-2. RESP 파서: Bulk String (`$3\r\nfoo\r\n`)
 - [ ] Stage 2-3. RESP 파서: Array (`*2\r\n...`)
 - [ ] Stage 2-4. RESP 파서: Integer, Error 타입
 - [ ] Stage 2-5. 커맨드 디스패처 (파싱된 명령어 → 핸들러 라우팅)

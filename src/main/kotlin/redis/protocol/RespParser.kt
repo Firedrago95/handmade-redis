@@ -1,21 +1,22 @@
 package redis.protocol
 
+import java.lang.IllegalArgumentException
+
 class RespParser {
 
+    companion object {
+        val parsers: Map<String, RespValueParser> = mapOf(
+            "+" to SimpleStringParser(),
+            "$" to BulkStringParser()
+        )
+    }
+
     fun parse(input: String): RespValue {
-        if (input.length < 3) {
-            throw IllegalArgumentException("입력 문자열은 반드시 3자 이상이 되어야 합니다.")
-        }
+        val firstCommand = input.substring(0, 1)
 
-        if (!input.startsWith("+")) {
-            throw IllegalArgumentException("입력 문자열은 반드시 +로 시작해야 합니다.")
-        }
+        val parser = parsers[firstCommand]
+            ?: throw IllegalArgumentException("지원하지 않는 RESP 타입입니다: $firstCommand")
 
-        if (!input.endsWith("\r\n")){
-            throw IllegalArgumentException("입력 문자열은 반드시 개행문자로 끝나야 합니다.")
-        }
-
-        val substring = input.substring(1, input.length - 2)
-        return RespValue.SimpleString(substring)
+        return parser.parse(input)
     }
 }
