@@ -27,10 +27,17 @@ class RespParser (private val inputStream: InputStream) {
         if (length == -1) return RespValue.BulkString(null)
         if (length < -1) throw IllegalArgumentException("BulkString은 -1 이외의 음수 길이를 가질 수 없습니다.")
 
-        val readNBytes = inputStream.readNBytes(length)
-        inputStream.readNBytes(2)
+        val bytes = inputStream.readNBytes(length)
+        if (bytes.size != length) {
+            throw IllegalArgumentException("BulkString 파싱을 위한 데이터가 길이와 일치하지 않습니다.")
+        }
 
-        return RespValue.BulkString(String(readNBytes))
+        val crlf = inputStream.readNBytes(2)
+        if (crlf.size < 2 || crlf[0] != '\r'.code.toByte() || crlf[1] != '\n'.code.toByte()) {
+            throw IllegalArgumentException("BulkString 종료 개행이 올바르지 않습니다.")
+        }
+
+        return RespValue.BulkString(String(bytes, Charsets.UTF_8))
     }
 
     private fun readArray(): RespValue {

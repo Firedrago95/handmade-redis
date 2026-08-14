@@ -83,6 +83,34 @@ class RespParserTest {
         }
     }
 
+    @Test
+    fun `UTF-8 한글 3바이트 payload가 올바르게 파싱되어야 한다`() {
+        val input = "\$3\r\n한\r\n"
+        val parser = createParser(input)
+        val parsed = parser.parse()
+
+        assertInstanceOf(RespValue.BulkString::class.java, parsed)
+        assertEquals("한", (parsed as RespValue.BulkString).content)
+    }
+
+    @Test
+    fun `BulkString 파싱 시 지정된 바이트 길이보다 데이터가 부족한 경우 예외가 발생해야 한다`() {
+        val input = "\$3\r\nfo"
+        val parser = createParser(input)
+        assertThrows<IllegalArgumentException> {
+            parser.parse()
+        }
+    }
+
+    @Test
+    fun `BulkString 종료 개행이 CRLF가 아닐 경우 예외가 발생해야 한다`() {
+        val input = "\$3\r\nfooXX"
+        val parser = createParser(input)
+        assertThrows<IllegalArgumentException> {
+            parser.parse()
+        }
+    }
+
     // --- Array 테스트 ---
 
     @Test
