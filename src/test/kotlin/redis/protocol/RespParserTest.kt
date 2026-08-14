@@ -9,84 +9,26 @@ class RespParserTest {
     private val parser = RespParser()
 
     @Test
-    fun `+OK CRLF 입력 시 SimpleString(OK)로 파싱되어야 한다`() {
+    fun `+ 식별자 입력 시 SimpleStringParser로 라우팅되어 결과를 반환해야 한다`() {
         val input = "+OK\r\n"
         val parsed = parser.parse(input)
 
         assertInstanceOf(RespValue.SimpleString::class.java, parsed)
-        val simpleString = parsed as RespValue.SimpleString
-        assertEquals("OK", simpleString.content)
+        assertEquals("OK", (parsed as RespValue.SimpleString).content)
     }
 
     @Test
-    fun `+PONG CRLF 입력 시 SimpleString(PONG)으로 파싱되어야 한다`() {
-        val input = "+PONG\r\n"
-        val parsed = parser.parse(input)
-
-        assertInstanceOf(RespValue.SimpleString::class.java, parsed)
-        val simpleString = parsed as RespValue.SimpleString
-        assertEquals("PONG", simpleString.content)
-    }
-
-    @Test
-    fun `+ CRLF 입력 시 빈 문자열을 담은 SimpleString으로 파싱되어야 한다`() {
-        val input = "+\r\n"
-        val parsed = parser.parse(input)
-
-        assertInstanceOf(RespValue.SimpleString::class.java, parsed)
-        val simpleString = parsed as RespValue.SimpleString
-        assertEquals("", simpleString.content)
-    }
-
-    @Test
-    fun `CRLF 개행 문자로 끝나지 않는 경우 예외가 발생해야 한다`() {
-        val input = "+OK"
-        assertThrows<IllegalArgumentException> {
-            parser.parse(input)
-        }
-    }
-
-    @Test
-    fun `+ 로 시작하지 않는 경우 예외가 발생해야 한다`() {
-        val input = "OK\r\n"
-        assertThrows<IllegalArgumentException> {
-            parser.parse(input)
-        }
-    }
-
-    @Test
-    fun `$3 CRLF foo CRLF 입력 시 BulkString(foo)로 파싱되어야 한다`() {
+    fun `$ 식별자 입력 시 BulkStringParser로 라우팅되어 결과를 반환해야 한다`() {
         val input = "\$3\r\nfoo\r\n"
         val parsed = parser.parse(input)
 
         assertInstanceOf(RespValue.BulkString::class.java, parsed)
-        val bulkString = parsed as RespValue.BulkString
-        assertEquals("foo", bulkString.content)
+        assertEquals("foo", (parsed as RespValue.BulkString).content)
     }
 
     @Test
-    fun `$0 CRLF CRLF 입력 시 빈 문자열 BulkString으로 파싱되어야 한다`() {
-        val input = "\$0\r\n\r\n"
-        val parsed = parser.parse(input)
-
-        assertInstanceOf(RespValue.BulkString::class.java, parsed)
-        val bulkString = parsed as RespValue.BulkString
-        assertEquals("", bulkString.content)
-    }
-
-    @Test
-    fun `$-1 CRLF 입력 시 Null을 담은 BulkString으로 파싱되어야 한다`() {
-        val input = "\$-1\r\n"
-        val parsed = parser.parse(input)
-
-        assertInstanceOf(RespValue.BulkString::class.java, parsed)
-        val bulkString = parsed as RespValue.BulkString
-        assertNull(bulkString.content)
-    }
-
-    @Test
-    fun `BulkString 지정된 길이와 실제 데이터 길이가 다른 경우 예외가 발생해야 한다`() {
-        val input = "\$5\r\nfoo\r\n"
+    fun `지원하지 않는 식별자가 입력된 경우 IllegalArgumentException이 발생해야 한다`() {
+        val input = "?INVALID\r\n"
         assertThrows<IllegalArgumentException> {
             parser.parse(input)
         }
