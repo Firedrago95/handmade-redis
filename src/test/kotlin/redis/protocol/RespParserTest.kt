@@ -197,4 +197,44 @@ class RespParserTest {
             parser.parse()
         }
     }
+
+    @Test
+    fun `Integer prefix 1000 CRLF 입력 시 Integer(1000)로 파싱되어야 한다`() {
+        val input = ":1000\r\n"
+        val parser = createParser(input)
+        val parsed = parser.parse()
+
+        assertInstanceOf(RespValue.Integer::class.java, parsed)
+        assertEquals(1000L, (parsed as RespValue.Integer).number)
+    }
+
+    @Test
+    fun `Integer prefix -50 CRLF 입력 시 Integer(-50)로 파싱되어야 한다`() {
+        val input = ":-50\r\n"
+        val parser = createParser(input)
+        val parsed = parser.parse()
+
+        assertInstanceOf(RespValue.Integer::class.java, parsed)
+        assertEquals(-50L, (parsed as RespValue.Integer).number)
+    }
+
+    @Test
+    fun `Integer prefix 0 CRLF 입력 시 Integer(0)으로 파싱되어야 한다`() {
+        val input = ":0\r\n"
+        val parser = createParser(input)
+        val parsed = parser.parse()
+
+        assertInstanceOf(RespValue.Integer::class.java, parsed)
+        assertEquals(0L, (parsed as RespValue.Integer).number)
+    }
+
+    @Test
+    fun `Integer prefix에 정수가 아닌 abc 값이 입력되면 예외가 발생해야 한다`() {
+        val input = ":abc\r\n"
+        val parser = createParser(input)
+        assertThrows<IllegalArgumentException> {
+            parser.parse()
+        }
+    }
 }
+

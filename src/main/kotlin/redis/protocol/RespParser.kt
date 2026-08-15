@@ -13,6 +13,7 @@ class RespParser (private val inputStream: InputStream) {
             '+' -> parseSimpleString()
             '$' -> parseBulkString()
             '*' -> readArray()
+            ':' -> parseInteger()
             else -> throw IllegalArgumentException("지원하지 않는 명령어 입니다. : $prefix")
         }
     }
@@ -50,6 +51,13 @@ class RespParser (private val inputStream: InputStream) {
             list.add(parse())
         }
         return RespValue.Array(list)
+    }
+
+    private fun parseInteger(): RespValue {
+        val num = readLine().toLongOrNull()
+        if (num == null) throw IllegalArgumentException("Integer는 숫자만 입력가능합니다.")
+
+        return RespValue.Integer(num)
     }
 
     private fun readLine() : String {
