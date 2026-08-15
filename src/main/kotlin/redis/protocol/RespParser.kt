@@ -72,7 +72,10 @@ class RespParser (private val inputStream: InputStream) {
 
         while (inputStream.read().also { b = it } != -1) {
             if (b == '\r'.code) {
-                inputStream.read()
+                val next = inputStream.read()
+                if (next != '\n'.code) {
+                    throw IllegalArgumentException("CRLF 개행 형식이 올바르지 않습니다.")
+                }
                 break
             }
             ba.write(b)

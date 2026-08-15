@@ -270,6 +270,16 @@ class RespParserTest {
         assertEquals(RespValue.Integer(100L), array.elements[0])
         assertEquals(RespValue.Error("ERR test"), array.elements[1])
     }
+
+    @Test
+    fun `CRLF 개행 시 carriage return 뒤에 n이 아닌 문자가 오면 예외가 발생해야 한다`() {
+        val input = "+OK\rX"
+        val parser = createParser(input)
+        assertThrows<IllegalArgumentException> {
+            parser.parse()
+        }
+    }
 }
+
 
 

@@ -52,4 +52,16 @@ class CommandDispatcherTest {
         assertInstanceOf(RespValue.Error::class.java, response)
         assertEquals("ERR 잘못된 명령어 입니다.", (response as RespValue.Error).message)
     }
+
+    @Test
+    fun `명령어 위치에 BulkString이 아닌 Integer 타입이 들어오면 Error 응답을 반환해야 한다`() {
+        val request = RespValue.Array(
+            listOf(RespValue.Integer(100L))
+        )
+        val response = dispatcher.dispatch(request)
+
+        assertInstanceOf(RespValue.Error::class.java, response)
+        assertEquals("ERR 잘못된 request 명령어입니다.", (response as RespValue.Error).message)
+    }
 }
+
