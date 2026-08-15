@@ -236,5 +236,40 @@ class RespParserTest {
             parser.parse()
         }
     }
+
+    @Test
+    fun `Error prefix ERR unknown command CRLF 입력 시 Error(ERR unknown command)로 파싱되어야 한다`() {
+        val input = "-ERR unknown command\r\n"
+        val parser = createParser(input)
+        val parsed = parser.parse()
+
+        assertInstanceOf(RespValue.Error::class.java, parsed)
+        assertEquals("ERR unknown command", (parsed as RespValue.Error).message)
+    }
+
+    @Test
+    fun `Error prefix 빈 에러 메시지 CRLF 입력 시 Error()로 파싱되어야 한다`() {
+        val input = "-\r\n"
+        val parser = createParser(input)
+        val parsed = parser.parse()
+
+        assertInstanceOf(RespValue.Error::class.java, parsed)
+        assertEquals("", (parsed as RespValue.Error).message)
+    }
+
+    @Test
+    fun `Array 요소로 Integer와 Error가 포함된 경우 올바르게 파싱되어야 한다`() {
+        val input = "*2\r\n:100\r\n-ERR test\r\n"
+        val parser = createParser(input)
+        val parsed = parser.parse()
+
+        assertInstanceOf(RespValue.Array::class.java, parsed)
+        val array = parsed as RespValue.Array
+        assertNotNull(array.elements)
+        assertEquals(2, array.elements!!.size)
+        assertEquals(RespValue.Integer(100L), array.elements[0])
+        assertEquals(RespValue.Error("ERR test"), array.elements[1])
+    }
 }
+
 
