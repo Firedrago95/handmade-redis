@@ -34,7 +34,7 @@
 - [x] Stage 2-2. RESP 파서: Bulk String (`$3\r\nfoo\r\n`)
 - [x] Stage 2-3. RESP 파서: Array (`*2\r\n...`)
 - [x] Stage 2-4. RESP 파서: Integer, Error 타입
-- [ ] Stage 2-5. 커맨드 디스패처 (파싱된 명령어 → 핸들러 라우팅)
+- [x] Stage 2-5. 커맨드 디스패처 (파싱된 명령어 → 핸들러 라우팅)
 
 ### Phase 3: 기본 명령어
 - [ ] Stage 3-1. PING / PING \<message\>
@@ -66,4 +66,5 @@
 - [ ] Stage 8-1. Java NIO (Selector) 기반 싱글 스레드 이벤트 루프로 네트워크 계층 교체
 - [ ] Stage 8-2. 논블로킹 I/O 버퍼 파싱 및 기존 통합 테스트 회귀 검증
 
-**진행률**: 8 / 27
+**진행률**: 9 / 27
+
