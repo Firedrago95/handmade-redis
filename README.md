@@ -11,10 +11,12 @@
 
 ## 💡 학습 방식 및 협업 룰
 1. **직접 구현 (No Auto-code)**: 에이전트(AI)는 절대 프로덕션 코드(`src/main`)를 대신 짜주지 않습니다. 구현과 아키텍처 고민은 전적으로 개발자 본인의 몫입니다.
-2. **TDD 에이전트 보조**: 사용자가 자연어로 구현할 스펙(예: "포트 6379에 접속해서 PING을 쏘는 테스트 짜줘")을 요구하면, 에이전트가 그에 맞는 **JUnit5 통신 통합 테스트 코드(TCP 클라이언트 역할)**를 작성해 줍니다. 
+2. **TDD 에이전트 보조**: 사용자가 자연어로 구현할 스펙(예: "포트 6379에 접속해서 PING을 쏘는 테스트 짜줘")을 요구하면, 에이전트가 그에 맞는 테스트 코드를 작성해 줍니다. 
 3. **코드 리뷰 교차 검증**:
    - 각 Stage(단계) 구현이 끝날 때마다 PR을 생성하고 **CodeRabbit**을 통해 전반적인 코드 품질 리뷰를 받습니다.
    - 에이전트에게 명시적으로 리뷰를 요청하여, 놓친 엣지 케이스, 소켓/스트림 누수, 동시성 이슈 등 아키텍처 관점의 깊이 있는 피드백을 받습니다.
+4. **CodeCrafters 정석 가이드 준수**:
+   - 에이전트(AI)는 앞으로 모든 아키텍처 및 파서 구현 가이드 시, 반드시 검색 및 CodeCrafters 공식 레퍼런스 솔루션 정석(`InputStream` 기반 스트림 파서, 비트/바이트 읽기, 명확한 스펙 준수)을 확인한 후 이를 100% 우선 적용하여 방향을 안내합니다.
 
 ## 🚀 커리큘럼 진행 상황 (Stages)
 
@@ -28,11 +30,11 @@
 - [x] Stage 1-4. 다중 클라이언트 동시 처리 (Thread-per-connection / Virtual Thread)
 
 ### Phase 2: RESP 프로토콜
-- [ ] Stage 2-1. RESP 파서: Simple String (`+OK\r\n`)
-- [ ] Stage 2-2. RESP 파서: Bulk String (`$3\r\nfoo\r\n`)
-- [ ] Stage 2-3. RESP 파서: Array (`*2\r\n...`)
-- [ ] Stage 2-4. RESP 파서: Integer, Error 타입
-- [ ] Stage 2-5. 커맨드 디스패처 (파싱된 명령어 → 핸들러 라우팅)
+- [x] Stage 2-1. RESP 파서: Simple String (`+OK\r\n`)
+- [x] Stage 2-2. RESP 파서: Bulk String (`$3\r\nfoo\r\n`)
+- [x] Stage 2-3. RESP 파서: Array (`*2\r\n...`)
+- [x] Stage 2-4. RESP 파서: Integer, Error 타입
+- [x] Stage 2-5. 커맨드 디스패처 (파싱된 명령어 → 핸들러 라우팅)
 
 ### Phase 3: 기본 명령어
 - [ ] Stage 3-1. PING / PING \<message\>
@@ -64,4 +66,5 @@
 - [ ] Stage 8-1. Java NIO (Selector) 기반 싱글 스레드 이벤트 루프로 네트워크 계층 교체
 - [ ] Stage 8-2. 논블로킹 I/O 버퍼 파싱 및 기존 통합 테스트 회귀 검증
 
-**진행률**: 4 / 27
+**진행률**: 9 / 27
+
