@@ -12,7 +12,7 @@ class CommandDispatcher {
         val elements = request.elements
         val firstElement = elements[0] as? RespValue.BulkString
             ?: return RespValue.Error("ERR 잘못된 request 명령어입니다.")
-        val content = firstElement.content?.uppercase()
+        val content = firstElement.content?.toString(Charsets.UTF_8)?.uppercase()
         val args = elements.drop(1)
 
         return when (content) {

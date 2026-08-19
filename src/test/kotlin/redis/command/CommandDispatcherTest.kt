@@ -12,7 +12,7 @@ class CommandDispatcherTest {
     @Test
     fun `PING 입력 시 SimpleString(PONG) 응답을 반환해야 한다`() {
         val request = RespValue.Array(
-            listOf(RespValue.BulkString("PING"))
+            listOf(RespValue.BulkString("PING".toByteArray()))
         )
         val response = dispatcher.dispatch(request)
 
@@ -23,18 +23,18 @@ class CommandDispatcherTest {
     @Test
     fun `PING과 인자가 입력 시 해당 인자를 BulkString으로 반환해야 한다`() {
         val request = RespValue.Array(
-            listOf(RespValue.BulkString("PING"), RespValue.BulkString("hello"))
+            listOf(RespValue.BulkString("PING".toByteArray()), RespValue.BulkString("hello".toByteArray()))
         )
         val response = dispatcher.dispatch(request)
 
         assertInstanceOf(RespValue.BulkString::class.java, response)
-        assertEquals("hello", (response as RespValue.BulkString).content)
+        org.junit.jupiter.api.Assertions.assertArrayEquals("hello".toByteArray(), (response as RespValue.BulkString).content)
     }
 
     @Test
     fun `소문자 ping 입력 시에도 대소문자 구분 없이 PONG 응답을 반환해야 한다`() {
         val request = RespValue.Array(
-            listOf(RespValue.BulkString("ping"))
+            listOf(RespValue.BulkString("ping".toByteArray()))
         )
         val response = dispatcher.dispatch(request)
 
@@ -45,7 +45,7 @@ class CommandDispatcherTest {
     @Test
     fun `지원하지 않는 명령어 입력 시 Error 응답을 반환해야 한다`() {
         val request = RespValue.Array(
-            listOf(RespValue.BulkString("UNKNOWN"))
+            listOf(RespValue.BulkString("UNKNOWN".toByteArray()))
         )
         val response = dispatcher.dispatch(request)
 

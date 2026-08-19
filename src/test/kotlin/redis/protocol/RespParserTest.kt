@@ -51,17 +51,17 @@ class RespParserTest {
         val parsed = parser.parse()
 
         assertInstanceOf(RespValue.BulkString::class.java, parsed)
-        assertEquals("foo", (parsed as RespValue.BulkString).content)
+        assertArrayEquals("foo".toByteArray(), (parsed as RespValue.BulkString).content)
     }
 
     @Test
-    fun `$0 CRLF CRLF 입력 시 빈 문자열 BulkString으로 파싱되어야 한다`() {
+    fun `$0 CRLF CRLF 입력 시 빈 바이트 배열 BulkString으로 파싱되어야 한다`() {
         val input = "\$0\r\n\r\n"
         val parser = createParser(input)
         val parsed = parser.parse()
 
         assertInstanceOf(RespValue.BulkString::class.java, parsed)
-        assertEquals("", (parsed as RespValue.BulkString).content)
+        assertArrayEquals(byteArrayOf(), (parsed as RespValue.BulkString).content)
     }
 
     @Test
@@ -90,7 +90,21 @@ class RespParserTest {
         val parsed = parser.parse()
 
         assertInstanceOf(RespValue.BulkString::class.java, parsed)
-        assertEquals("한", (parsed as RespValue.BulkString).content)
+        assertArrayEquals("한".toByteArray(Charsets.UTF_8), (parsed as RespValue.BulkString).content)
+    }
+
+    @Test
+    fun `임의의 8-bit 바이너리 데이터(0x00, 0xFF 등)가 데이터 유실 없이 파싱되어야 한다`() {
+        val binaryData = byteArrayOf(0x00, 0xFF.toByte(), 0x1B, 0x7F)
+        val prefixHeader = "\$4\r\n".toByteArray(Charsets.UTF_8)
+        val suffixCrlf = "\r\n".toByteArray(Charsets.UTF_8)
+        val fullStream = prefixHeader + binaryData + suffixCrlf
+
+        val parser = RespParser(fullStream.inputStream())
+        val parsed = parser.parse()
+
+        assertInstanceOf(RespValue.BulkString::class.java, parsed)
+        assertArrayEquals(binaryData, (parsed as RespValue.BulkString).content)
     }
 
     @Test
@@ -123,8 +137,8 @@ class RespParserTest {
         val array = parsed as RespValue.Array
         assertNotNull(array.elements)
         assertEquals(2, array.elements!!.size)
-        assertEquals(RespValue.BulkString("foo"), array.elements[0])
-        assertEquals(RespValue.BulkString("bar"), array.elements[1])
+        assertArrayEquals("foo".toByteArray(), (array.elements[0] as RespValue.BulkString).content)
+        assertArrayEquals("bar".toByteArray(), (array.elements[1] as RespValue.BulkString).content)
     }
 
     @Test
@@ -138,7 +152,7 @@ class RespParserTest {
         assertNotNull(array.elements)
         assertEquals(2, array.elements!!.size)
         assertEquals(RespValue.SimpleString("OK"), array.elements[0])
-        assertEquals(RespValue.BulkString("foo"), array.elements[1])
+        assertArrayEquals("foo".toByteArray(), (array.elements[1] as RespValue.BulkString).content)
     }
 
     @Test

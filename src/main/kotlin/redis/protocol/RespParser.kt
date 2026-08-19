@@ -39,7 +39,7 @@ class RespParser (private val inputStream: InputStream) {
             throw IllegalArgumentException("BulkString 종료 개행이 올바르지 않습니다.")
         }
 
-        return RespValue.BulkString(String(bytes, Charsets.UTF_8))
+        return RespValue.BulkString(bytes)
     }
 
     private fun readArray(): RespValue {
