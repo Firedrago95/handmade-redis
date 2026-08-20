@@ -1,5 +1,4 @@
 # Handmade Redis (Build Your Own Redis)
-
 이 프로젝트는 학습 목적으로 Redis 서버를 밑바닥부터 구현하는 프로젝트입니다. 
 **CodeCrafters의 "Build Your Own Redis" 챌린지 커리큘럼**을 로컬 환경에서 TDD 방식으로 진행합니다.
 
