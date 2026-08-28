@@ -5,14 +5,16 @@ import redis.command.CommandDispatcher
 import redis.protocol.RespEncoder
 import redis.protocol.RespParser
 import redis.protocol.RespValue
+import java.io.InputStream
+import java.io.OutputStream
 import java.net.ServerSocket
 import java.net.Socket
 import java.util.concurrent.Executors
 
-class RedisServer (
-    private val dispatcher : CommandDispatcher = CommandDispatcher(),
-    private val encoder : RespEncoder = RespEncoder()
-){
+class RedisServer(
+    private val dispatcher: CommandDispatcher = CommandDispatcher(),
+    private val encoder: RespEncoder = RespEncoder()
+) {
 
     private val log = KotlinLogging.logger {}
     private val executor = Executors.newVirtualThreadPerTaskExecutor()
@@ -33,25 +35,27 @@ class RedisServer (
             val clientPort = clientSocket.port
             log.info { "새로운 클라이언트 연결 수락됨: [$clientIp:$clientPort]" }
 
-            // 연결한번당 Stream은 한번만 호출
-            val inputStream = clientSocket.inputStream
-            val outputStream = clientSocket.outputStream
-            val parser = RespParser(inputStream)
-
-            // 1-3. 하나의 연결에서 다중 입력 처리
             try {
-                while (true) {
-                    val request = parser.parse() as? RespValue.Array ?: return
-                    val response = dispatcher.dispatch(request)
-                    val encodedBytes = encoder.encode(response)
-
-                    // 1-2. 응답하기
-                    outputStream.write(encodedBytes)
-                    outputStream.flush()
-                }
+                processCommands(clientSocket.inputStream, clientSocket.outputStream)
             } catch (e: Exception) {
-                log.info("클라이언트 연결 종료:[${clientSocket.inetAddress.hostAddress}:${clientSocket.port}]")
+                log.debug { "연결 예외 발생: ${e.message}" }
+            } finally {
+                log.info { "클라이언트 연결 종료됨: [$clientIp:$clientPort]" }
             }
         }
     }
+
+    private fun processCommands(inputStream: InputStream, outputStream: OutputStream) {
+        val parser = RespParser(inputStream)
+
+        while (true) {
+            val request = parser.parse() as? RespValue.Array ?: break
+            val response = dispatcher.dispatch(request)
+            val encodedBytes = encoder.encode(response)
+
+            outputStream.write(encodedBytes)
+            outputStream.flush()
+        }
+    }
 }
+
