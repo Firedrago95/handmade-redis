@@ -1,11 +1,18 @@
 package redis.network
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import redis.command.CommandDispatcher
+import redis.protocol.RespEncoder
+import redis.protocol.RespParser
+import redis.protocol.RespValue
 import java.net.ServerSocket
 import java.net.Socket
 import java.util.concurrent.Executors
 
-class RedisServer {
+class RedisServer (
+    private val dispatcher : CommandDispatcher = CommandDispatcher(),
+    private val encoder : RespEncoder = RespEncoder()
+){
 
     private val log = KotlinLogging.logger {}
     private val executor = Executors.newVirtualThreadPerTaskExecutor()
@@ -29,19 +36,21 @@ class RedisServer {
             // 연결한번당 Stream은 한번만 호출
             val inputStream = clientSocket.inputStream
             val outputStream = clientSocket.outputStream
+            val parser = RespParser(inputStream)
 
             // 1-3. 하나의 연결에서 다중 입력 처리
-            while (true) {
-                // 1-2. 소켓을 통해 입력 읽기
-                val buffer = ByteArray(1024)
-                val byteRead = inputStream.read(buffer)
-                if (byteRead == -1) break
+            try {
+                while (true) {
+                    val request = parser.parse() as? RespValue.Array ?: return
+                    val response = dispatcher.dispatch(request)
+                    val encodedBytes = encoder.encode(response)
 
-                val response = String(buffer, 0, byteRead)
-
-                // 1-2. 응답하기
-                outputStream.write("+PONG\r\n".toByteArray())
-                outputStream.flush()
+                    // 1-2. 응답하기
+                    outputStream.write(encodedBytes)
+                    outputStream.flush()
+                }
+            } catch (e: Exception) {
+                log.info("클라이언트 연결 종료:[${clientSocket.inetAddress.hostAddress}:${clientSocket.port}]")
             }
         }
     }
